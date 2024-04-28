@@ -1,15 +1,14 @@
-const { split } = require("./splitMessages");
+const downloadAttachments = require("./downloadAttachments");
 
 function run() {
   const [, , ...args] = process.argv;
   const argsMaps = new Map(args.map((arg) => arg.split("=")));
   const channel = argsMaps.get("channel");
   const target = argsMaps.get("target");
-  const messagesPerPage = argsMaps.get("messages");
 
-  split({ channel, target, messagesPerPage });
+  downloadAttachments({ channel, target });
 }
 
 run();
 
-// node splitMessages [channel=] [target=] [messages=]
+// node attachments [channel=] [target=]

@@ -21,12 +21,14 @@ function split({ channel, target = channel, messagesPerPage = 1000 }) {
 }
 
 // split and save messages to separate files/pages
-function writeFilesFromData({ target, data, messagesPerPage = 1000 }) {
+async function writeFilesFromData({ target, data, messagesPerPage = 1000 }) {
   const dir = MESSAGES_DIR;
 
   fs.rmSync(`${dir}/${target}`, { recursive: true, force: true });
 
   const pages = Math.ceil(data.length / messagesPerPage);
+
+  const promisesAll = [];
 
   for (let i = 0; i < pages; i++) {
     const pageData = data.slice(
@@ -36,26 +38,34 @@ function writeFilesFromData({ target, data, messagesPerPage = 1000 }) {
 
     const targetDir = `${dir}/${target}/${i + 1}`;
 
-    fs.mkdir(`${targetDir}`, { recursive: true }, (err) => {
-      if (err) {
-        console.log(err);
-        return;
-      }
-
-      fs.writeFile(
-        `${targetDir}/data.json`,
-        JSON.stringify(pageData),
-        (err) => {
+    promisesAll.push(
+      new Promise((resolve) => {
+        fs.mkdir(`${targetDir}`, { recursive: true }, (err) => {
           if (err) {
-            console.error(err);
+            console.log(err);
+            resolve("done");
             return;
           }
 
-          console.log(`Write file ${targetDir}`);
-        }
-      );
-    });
+          fs.writeFile(
+            `${targetDir}/data.json`,
+            JSON.stringify(pageData),
+            (err) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+
+              console.log(`Write file ${targetDir}`);
+              resolve("done");
+            }
+          );
+        });
+      })
+    );
   }
+
+  return Promise.all(promisesAll);
 }
 
 module.exports = { split, writeFilesFromData };
