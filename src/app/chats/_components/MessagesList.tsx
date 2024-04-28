@@ -28,7 +28,8 @@ export function MessagesList({ messages }: { messages: Discord.Message[] }) {
   const { blur } = useContext(MessagesContext);
   const messageListRef =
     useRef<VirtuosoMessageListMethods<Discord.Message, MessageContext>>(null);
-  const [ref, bounds] = useMeasure<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
+  const [listHeight, setListHeight] = useState<number | undefined>(undefined);
   const [show, setShow] = useState(false);
   const updated = useRef(false);
 
@@ -82,15 +83,30 @@ export function MessagesList({ messages }: { messages: Discord.Message[] }) {
     }
   }, [params, messages, show]);
 
+  useEffect(() => {
+    function onResize() {
+      setListHeight(window.innerHeight - (ref.current?.offsetTop || 0) - 32);
+    }
+
+    window.addEventListener("resize", onResize);
+    onResize();
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ height: listHeight }}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList<Discord.Message, MessageContext>
           ref={messageListRef}
-          className={cx("px-4 mt-8 transition-opacity duration-500 delay-150", {
-            "opacity-0": !show,
-          })}
-          style={{ height: window.innerHeight - (bounds?.top || 0) - 48 }}
+          className={cx(
+            "px-4 mt-8 transition-opacity duration-500 delay-150 h-full",
+            {
+              "opacity-0": !show,
+            }
+          )}
           computeItemKey={({ data }) => data.id}
           ItemContent={ItemContent}
           context={{
