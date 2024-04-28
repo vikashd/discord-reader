@@ -9,11 +9,11 @@ export default async function Layout({
   params: { channel: string; page: string };
 }>) {
   const data = await getMessages(channel, page);
-  const { authors1, total } = data;
+  const { authors, total } = data;
 
   return (
     <MessagesContextProvider
-      authors={new Map(authors1)}
+      authors={new Map(authors)}
       channel={channel}
       totalPages={total}
     >

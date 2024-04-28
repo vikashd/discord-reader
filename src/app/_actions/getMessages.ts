@@ -11,7 +11,7 @@ import { Discord } from "@/app/chats/_types/Discord";
 
 export const getMessages = unstable_cache(
   async (
-    folder: string,
+    channel: string,
     page: string[] | string = ["1"],
     messageIds?: string[][],
     filters?: LinkTypes[]
@@ -20,10 +20,9 @@ export const getMessages = unstable_cache(
     total: number;
     attachments: Discord.Attachment[];
     calls: Required<Discord.Message>["call"][];
-    authors: Map<string, Discord.Author>;
-    authors1: [string, Discord.Author][];
+    authors: [string, Discord.Author][];
   }> => {
-    const dir = `${process.cwd()}/src/app/_messages/${folder}`;
+    const dir = `${process.cwd()}/src/app/_messages/${channel}`;
     const pages = (await fs.readdir(dir)).sort(
       (a, b) => parseInt(a, 10) - parseInt(b, 10)
     );
@@ -41,7 +40,23 @@ export const getMessages = unstable_cache(
           flag: "r",
         });
 
-        const json: Discord.Message[] = JSON.parse(data);
+        const json = (JSON.parse(data) as Discord.Message[]).map((message) => {
+          const { attachments } = message;
+
+          if (!attachments.length) {
+            return message;
+          }
+
+          return {
+            ...message,
+            attachments: attachments.map((attachment) => {
+              return {
+                ...attachment,
+                url: `/img/chats/${channel}/${file}/${attachment.id}_${attachment.filename}`,
+              };
+            }),
+          };
+        });
 
         if (messageIds?.[i]) {
           return json.filter((message) => messageIds[i]?.includes(message.id));
@@ -93,8 +108,7 @@ export const getMessages = unstable_cache(
       total: pages.length,
       attachments: allAttachments,
       calls: allCalls,
-      authors,
-      authors1: Array.from(authors),
+      authors: Array.from(authors),
     };
   }
 );
