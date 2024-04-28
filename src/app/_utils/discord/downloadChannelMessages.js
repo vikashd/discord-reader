@@ -1,4 +1,36 @@
-let messagesAll = [];
+const fs = require("fs");
+const { MESSAGES_DIR } = require("./config");
+const { writeFilesFromData } = require("./splitMessages");
+
+const downloadChannelMessages = async ({
+  channel,
+  before = null,
+  limit = 100,
+  options,
+}) => {
+  let messagesAll = await getMessagesBefore({
+    channel,
+    before,
+    limit,
+    options,
+  });
+
+  if (messagesAll.length) {
+    const last = messagesAll[messagesAll.length - 1];
+    console.log(`Downloading before ${last.id}`);
+
+    const latestMessages = await downloadChannelMessages({
+      channel,
+      before: last.id,
+      limit,
+      options,
+    });
+
+    messagesAll = messagesAll.concat(latestMessages);
+  }
+
+  return messagesAll;
+};
 
 const getMessagesBefore = async ({
   channel,
@@ -45,22 +77,64 @@ const getMessagesBefore = async ({
   });
 };
 
-const downloadChannelMessages = async ({
-  channel,
-  before = null,
-  limit = 100,
-  options,
-}) => {
-  const data = await getMessagesBefore({ channel, before, limit, options });
-  messagesAll = messagesAll.concat(data);
-  console.clear();
-  console.log(messagesAll.length, data.length);
+async function run() {
+  const [, , ...args] = process.argv;
 
-  if (data.length) {
-    const last = data[data.length - 1];
+  const argsMaps = new Map(args.map((arg) => arg.split("=")));
+  const channel = argsMaps.get("channel");
 
-    downloadChannelMessages({ channel, before: last.id, limit, options });
-  } else {
-    console.log(messagesAll);
+  if (!channel) {
+    console.error("\x1b[31mError: Specify a channel", "\n\x1b[0m");
+    return;
   }
-};
+
+  const token = "";
+  const authorization = "";
+  const referrer = "";
+
+  const messages = await downloadChannelMessages({
+    channel,
+    options: {
+      headers: {
+        accept: "*/*",
+        "accept-language": "en-GB,en-AU;q=0.9,en-US;q=0.8,en;q=0.7,th;q=0.6",
+        authorization,
+        "cache-control": "no-cache",
+        pragma: "no-cache",
+        "sec-ch-ua":
+          '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "x-debug-options": "bugReporterEnabled",
+        "x-discord-locale": "en-GB",
+        "x-discord-timezone": "Asia/Bangkok",
+        "x-super-properties": token,
+      },
+      referrer,
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: null,
+      method: "GET",
+      mode: "cors",
+      credentials: "include",
+    },
+  });
+
+  try {
+    fs.writeFileSync(
+      `${MESSAGES_DIR}/${channel}.json`,
+      JSON.stringify(messages)
+    );
+  } catch (e) {
+    console.log(e.message);
+    return;
+  }
+
+  const data = messages.reverse();
+
+  writeFilesFromData({ data, target: channel });
+}
+
+run();

@@ -1,7 +1,8 @@
 const fs = require("fs");
+const { MESSAGES_DIR } = require("./config");
 
 function split({ channel, target = channel, messagesPerPage = 1000 }) {
-  const dir = `${__dirname}/../../_messages`;
+  const dir = MESSAGES_DIR;
   let response;
 
   try {
@@ -14,35 +15,46 @@ function split({ channel, target = channel, messagesPerPage = 1000 }) {
     return;
   }
 
+  const data = JSON.parse(response).reverse();
+
+  writeFilesFromData({ target, data, messagesPerPage });
+}
+
+function writeFilesFromData({ target, data, messagesPerPage = 1000 }) {
+  const dir = MESSAGES_DIR;
+
   fs.rmSync(`${dir}/${target}`, { recursive: true, force: true });
 
-  const data = JSON.parse(response).reverse();
   const pages = Math.ceil(data.length / messagesPerPage);
 
   for (let i = 0; i < pages; i++) {
-    const pageData = data.slice(i * 1000, i * 1000 + 1000);
-
-    fs.mkdirSync(`${dir}/${target}/${i + 1}`, { recursive: true });
-
-    fs.writeFile(
-      `${dir}/${target}/${i + 1}/data.json`,
-      JSON.stringify(pageData),
-      (err) => {
-        if (err) {
-          console.error(err);
-        }
-      }
+    const pageData = data.slice(
+      i * messagesPerPage,
+      i * messagesPerPage + messagesPerPage
     );
+
+    const targetDir = `${dir}/${target}/${i + 1}`;
+
+    fs.mkdir(`${targetDir}`, { recursive: true }, (err) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+
+      fs.writeFile(
+        `${targetDir}/data.json`,
+        JSON.stringify(pageData),
+        (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          console.log(`Write file ${targetDir}`);
+        }
+      );
+    });
   }
-
-  console.log(`${pages} page(s) saved to '${dir}/${target}'`);
 }
 
-function run() {
-  const [, , channel, target, messagesPerPage = 1000] = process.argv;
-  split({ channel, target, messagesPerPage });
-}
-
-run();
-
-// node splitMessages [channel] [target] [messagesPerPage]
+module.exports = { split, writeFilesFromData };

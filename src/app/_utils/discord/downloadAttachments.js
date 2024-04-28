@@ -1,11 +1,11 @@
 const fs = require("fs");
-var http = require("https");
+const https = require("https");
+const { MESSAGES_DIR } = require("./config");
 
 const downloadTo = function (url, dest, cb) {
   const file = fs.createWriteStream(dest);
-  // console.log(`download ${url}`);
 
-  return http
+  return https
     .get(url, function (response) {
       response.pipe(file);
       file.on("finish", function () {
@@ -22,8 +22,9 @@ const downloadTo = function (url, dest, cb) {
 };
 
 async function downloadAttachments({ channel, target = channel }) {
-  const channelDir = `${__dirname}/../../_messages/${channel}`;
-  const targetDir = `${__dirname}/../../_messages/${target}`;
+  const dir = MESSAGES_DIR;
+  const channelDir = `${dir}/${channel}`;
+  const targetDir = `${dir}/${target}`;
   let pages = [];
 
   try {
@@ -111,11 +112,14 @@ async function downloadAttachments({ channel, target = channel }) {
 }
 
 function run() {
-  const [, , channel, target] = process.argv;
+  const [, , ...args] = process.argv;
+  const argsMaps = new Map(args.map((arg) => arg.split("=")));
+  const channel = argsMaps.get("channel");
+  const target = argsMaps.get("target");
 
   downloadAttachments({ channel, target });
 }
 
 run();
 
-// node downloadChannelMessages [channel] [target]
+// node downloadChannelMessages [channel=] [target=]
