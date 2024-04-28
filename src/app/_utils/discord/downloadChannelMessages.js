@@ -1,3 +1,6 @@
+require("@dotenvx/dotenvx").config({
+  path: `${__dirname}/../../../../.env.local`,
+});
 const fs = require("fs");
 const { MESSAGES_DIR } = require("./config");
 const { writeFilesFromData } = require("./splitMessages");
@@ -17,7 +20,7 @@ const downloadChannelMessages = async ({
 
   if (messagesAll.length) {
     const last = messagesAll[messagesAll.length - 1];
-    console.log(`Downloading before ${last.id}`);
+    console.log(`Downloading ${limit} messages before ${last.id}`);
 
     const latestMessages = await downloadChannelMessages({
       channel,
@@ -46,6 +49,8 @@ const getMessagesBefore = async ({
 
   const response = await fetch(url, options);
   const data = await response.json();
+
+  // message data is returned in descending date order (latest to first)
 
   return data.map((item) => {
     const {
@@ -82,15 +87,13 @@ async function run() {
 
   const argsMaps = new Map(args.map((arg) => arg.split("=")));
   const channel = argsMaps.get("channel");
+  const target = argsMaps.get("target") || channel;
+  const skip = argsMaps.has("skip"); // skip saving all messages to one file
 
   if (!channel) {
     console.error("\x1b[31mError: Specify a channel", "\n\x1b[0m");
     return;
   }
-
-  const token = "";
-  const authorization = "";
-  const referrer = "";
 
   const messages = await downloadChannelMessages({
     channel,
@@ -98,7 +101,7 @@ async function run() {
       headers: {
         accept: "*/*",
         "accept-language": "en-GB,en-AU;q=0.9,en-US;q=0.8,en;q=0.7,th;q=0.6",
-        authorization,
+        authorization: process.env.DISCORD_AUTHORIZATION,
         "cache-control": "no-cache",
         pragma: "no-cache",
         "sec-ch-ua":
@@ -111,9 +114,9 @@ async function run() {
         "x-debug-options": "bugReporterEnabled",
         "x-discord-locale": "en-GB",
         "x-discord-timezone": "Asia/Bangkok",
-        "x-super-properties": token,
+        "x-super-properties": process.env.DISCORD_TOKEN,
       },
-      referrer,
+      referrer: process.env.DISCORD_REFERRER,
       referrerPolicy: "strict-origin-when-cross-origin",
       body: null,
       method: "GET",
@@ -122,19 +125,25 @@ async function run() {
     },
   });
 
-  try {
-    fs.writeFileSync(
-      `${MESSAGES_DIR}/${channel}.json`,
-      JSON.stringify(messages)
-    );
-  } catch (e) {
-    console.log(e.message);
-    return;
+  if (!skip) {
+    try {
+      fs.writeFileSync(
+        `${MESSAGES_DIR}/${target}.json`,
+        JSON.stringify(messages)
+      );
+
+      console.log(`Saved to file '${target}.json'`);
+    } catch (e) {
+      console.log(e.message);
+      return;
+    }
   }
 
   const data = messages.reverse();
 
-  writeFilesFromData({ data, target: channel });
+  writeFilesFromData({ data, target });
 }
 
 run();
+
+// node downloadChannelMessages channel= [target=] [skip]

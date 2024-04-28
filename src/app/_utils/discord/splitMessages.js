@@ -20,6 +20,7 @@ function split({ channel, target = channel, messagesPerPage = 1000 }) {
   writeFilesFromData({ target, data, messagesPerPage });
 }
 
+// split and save messages to separate files/pages
 function writeFilesFromData({ target, data, messagesPerPage = 1000 }) {
   const dir = MESSAGES_DIR;
 
