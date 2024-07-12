@@ -94,16 +94,18 @@ export function MessagesContentLinks({
 export async function MessageContentLinksWithSuspense({
   channel,
   page,
+  query,
 }: {
   channel: string;
   page: string;
+  query?: string;
 }) {
-  const response = await getMessages(channel, page);
+  const response = await getMessages({ channel, page, query });
 
   const {
     attachments,
     calls,
-    data: [messages],
+    data: [[, messages]],
   } = response;
 
   const contentLinks = getLinks(messages);

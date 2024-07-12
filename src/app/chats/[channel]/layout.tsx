@@ -8,7 +8,7 @@ export default async function Layout({
   children: React.ReactNode;
   params: { channel: string; page: string };
 }>) {
-  const data = await getMessages(channel, page);
+  const data = await getMessages({ channel, page });
   const { authors, total } = data;
 
   return (

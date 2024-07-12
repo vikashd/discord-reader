@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import { MicrophoneSolid } from "iconoir-react";
 import { DateTime } from "luxon";
 import { Discord } from "@/app/chats/_types/Discord";
@@ -20,7 +20,7 @@ export function Call({ message, options }: CallProps) {
 
   return (
     <div
-      className={cx("flex gap-1 items-center", {
+      className={clsx("flex gap-1 items-center", {
         "justify-end": options?.align === "right",
       })}
     >

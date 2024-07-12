@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import Image from "next/image";
 import { EmbedProps } from "./Embed";
 
@@ -13,7 +13,7 @@ export const Stickers: EmbedProps = ({ message, options }) => {
     return (
       <div
         key={id}
-        className={cx("flex mb-1 max-w-[160px]", {
+        className={clsx("flex mb-1 max-w-[160px]", {
           "ml-auto": options?.align === "right",
         })}
       >

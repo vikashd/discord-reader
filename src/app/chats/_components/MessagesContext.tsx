@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { createContext, useCallback, useEffect, useState } from "react";
 import { Discord } from "@/app/chats/_types/Discord";
 import { Favourites } from "./Favourites";
@@ -19,6 +25,7 @@ interface ContextProps {
   totalPages: number;
   blurMessages(blur: boolean): void;
   toggleBlur(): void;
+  closeFavourites(): void;
   addFavouriteMessage({
     page,
     message,
@@ -51,6 +58,7 @@ export const MessagesContext = createContext<ContextProps>({
   addFavouriteMessage() {},
   removeFavouriteMessage() {},
   toggleFavouriteMessage() {},
+  closeFavourites() {},
 });
 
 const getFavouritesFromLocalStorage = (channel: string) => {
@@ -77,6 +85,9 @@ export function MessagesContextProvider({
   const [favourites, setFavouriteMessage] = useState<
     Map<string, Map<string, string>>
   >(new Map());
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const updateLocalStorage = (favourites: Map<string, Map<string, string>>) => {
     const localStorageFavs = JSON.parse(
@@ -145,9 +156,35 @@ export function MessagesContextProvider({
     [addFavouriteMessage, removeFavouriteMessage, favourites]
   );
 
+  const closeFavourites = useCallback(() => {
+    if (!searchParams.has("menu")) {
+      return;
+    }
+
+    const updated = new URLSearchParams(searchParams);
+
+    updated.delete("menu");
+
+    router.push(`${pathname}?${updated.toString()}`, { scroll: false });
+  }, [pathname, searchParams, router]);
+
   useEffect(() => {
     setFavouriteMessage(getFavouritesFromLocalStorage(channel));
   }, [channel]);
+
+  useEffect(() => {
+    const onKeyUpHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeFavourites();
+      }
+    };
+
+    window.addEventListener("keyup", onKeyUpHandler);
+
+    return () => {
+      window.removeEventListener("keyup", onKeyUpHandler);
+    };
+  }, [closeFavourites]);
 
   return (
     <MessagesContext.Provider
@@ -156,12 +193,13 @@ export function MessagesContextProvider({
         authors,
         totalPages,
         blur,
+        favourites,
         blurMessages: (flag: boolean) => setBlur(flag),
         toggleBlur: () => setBlur((prev) => !prev),
         addFavouriteMessage,
         removeFavouriteMessage,
         toggleFavouriteMessage,
-        favourites,
+        closeFavourites,
       }}
     >
       {children}

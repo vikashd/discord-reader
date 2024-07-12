@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import { Star } from "iconoir-react";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
@@ -40,15 +40,15 @@ export function Favourites({ items }: FavouritesProps) {
     const load = async () => {
       setLoading(true);
 
-      const response = await getMessages(
-        params.channel as string,
-        pages,
-        messageIds
-      );
+      const response = await getMessages({
+        channel: params.channel as string,
+        page: pages,
+        messageIds,
+      });
 
       if (mounted) {
         setFavMessages(
-          response.data.map((messages, i) => {
+          response.data.map(([, messages], i) => {
             return [pages[i], messages];
           })
         );
@@ -62,13 +62,13 @@ export function Favourites({ items }: FavouritesProps) {
     return () => {
       mounted = false;
     };
-  }, [items]);
+  }, [items, params.channel]);
 
   const isOpen = searchParams.has("menu");
 
   return (
     <div
-      className={cx(
+      className={clsx(
         "fixed bg-slate-700/80 top-0 right-0 bottom-0 w-full max-w-[480px] px-4 py-12 transition-transform ease-out duration-200 transform-gpu overflow-y-auto",
         {
           "translate-x-0": isOpen,

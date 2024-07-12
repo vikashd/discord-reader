@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import {
   Link as LinkIcon,
   LongArrowUpLeft,
@@ -9,7 +9,7 @@ import Link from "next/link";
 import { forwardRef, useCallback, useContext } from "react";
 import { Discord } from "@/app/chats/_types/Discord";
 import { Attachment } from "./Attachment";
-import { Call } from "./content/embeds";
+import { Call, Reactions } from "./content/embeds";
 import { renderContent } from "./content/renderContent";
 import { MessagesContext } from "./MessagesContext";
 
@@ -53,7 +53,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
         id={id}
         ref={ref}
         data-id={message.id}
-        className={cx("text-xs py-1", {
+        className={clsx("text-xs py-1", {
           "pr-6": align === "left",
           "pl-6": align === "right",
           "blur-sm pointer-events-none": blur,
@@ -61,7 +61,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
       >
         {replyToMessage && (
           <p
-            className={cx(
+            className={clsx(
               "inline-flex text-[11px] text-slate-500 leading-snug mb-1",
               {
                 "flex-row-reverse": align === "right",
@@ -105,7 +105,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
         })}
         {attachments.length > 0 && (
           <div
-            className={cx("flex flex-wrap gap-2 items-start", {
+            className={clsx("flex flex-wrap gap-2 items-start", {
               "justify-end": align === "right",
             })}
           >
@@ -114,8 +114,9 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             })}
           </div>
         )}
+        <div className="my-1">{Reactions({ message, options: { align } })}</div>
         <div
-          className={cx("flex gap-2 items-center leading-none mt-1", {
+          className={clsx("flex gap-2 items-center leading-none mt-1", {
             "justify-end": align === "right",
           })}
         >

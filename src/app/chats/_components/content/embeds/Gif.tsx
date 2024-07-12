@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import Link from "next/link";
 import { EmbedProps } from "./Embed";
 
@@ -16,7 +16,7 @@ export const Gif: EmbedProps = ({ message, options }) => {
     return (
       <div
         key={url}
-        className={cx("flex mt-2 mb-1 max-w-[300px]", {
+        className={clsx("flex mt-2 mb-1 max-w-[300px]", {
           "ml-auto justify-end": options?.align === "right",
         })}
       >

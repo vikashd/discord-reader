@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import { StarSolid } from "iconoir-react";
 import React from "react";
 import { Discord } from "@/app/chats/_types/Discord";
@@ -9,7 +9,6 @@ import {
   Image,
   Instagram,
   Mentions,
-  Reactions,
   Stickers,
   Twitter,
   YouTube,
@@ -73,7 +72,6 @@ export function renderContent(
       { component: YouTube, hide: options?.hideEmbed },
       { component: Twitter, hide: options?.hideEmbed },
       { component: Stickers },
-      { component: Reactions, hide: options?.hideEmbed },
     ].reduce((acc, { component: Embed, hide }, i) => {
       if (hide) {
         return acc;
@@ -99,7 +97,7 @@ export function renderContent(
 
   const content = (
     <span
-      className={cx("break-words whitespace-pre-line", {
+      className={clsx("break-words whitespace-pre-line", {
         "line-clamp-2": isReply && !options?.hideEmbed,
         "line-clamp-3": options?.hideEmbed,
       })}
@@ -114,14 +112,14 @@ export function renderContent(
   const favButton = (
     <button
       type="button"
-      className={cx("align-sub px-1", {
+      className={clsx("align-sub px-1", {
         "-ml-1": options?.hideEmbed || options?.align === "right",
         "my-1": options?.hideEmbed && updated,
       })}
       onClick={() => options?.onClick?.(message.id)}
     >
       <StarSolid
-        className={cx(
+        className={clsx(
           "opacity-0",
           { "group-hover:opacity-50": !options?.isFavourite },
           {
@@ -136,7 +134,7 @@ export function renderContent(
   );
 
   return (
-    <div className={cx("group flex flex-col gap-1")}>
+    <div className={clsx("group flex flex-col gap-1")}>
       {updated && (
         <span dir={options?.align === "right" ? "rtl" : "ltr"}>
           <span dir="ltr">{content}</span>
@@ -166,7 +164,7 @@ const Render = ({
 }) => {
   return (
     <div
-      className={cx("relative mb-1", {
+      className={clsx("relative mb-1", {
         "ml-auto": align === "right",
         "mr-auto": align !== "right",
       })}

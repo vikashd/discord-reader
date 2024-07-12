@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json([], { status: 200 });
   }
 
-  const data = await getMessages(channel, page);
+  const data = await getMessages({ channel, page });
 
   return NextResponse.json(data, { status: 200 });
 }

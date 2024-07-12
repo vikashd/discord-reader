@@ -7,10 +7,10 @@ import {
   VirtuosoMessageListMethods,
   VirtuosoMessageListProps,
 } from "@virtuoso.dev/message-list";
-import cx from "classnames";
+import clsx from "clsx";
 import { DateTime } from "luxon";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Discord } from "@/app/chats/_types/Discord";
 import { useMeasure } from "@/app/_hooks";
@@ -19,12 +19,19 @@ import { MessagesContext } from "./MessagesContext";
 
 interface MessageContext {
   references: Map<string, Discord.Message | null>;
+  channel: string;
   page: string;
   blur?: boolean;
+  showLink?: boolean;
 }
 
-export function MessagesList({ messages }: { messages: Discord.Message[] }) {
+interface MessagesListProps {
+  pages: [string, Discord.Message[]][];
+}
+
+export function MessagesList({ pages }: MessagesListProps) {
   const params = useParams();
+  const searchParams = useSearchParams();
   const { blur } = useContext(MessagesContext);
   const messageListRef =
     useRef<VirtuosoMessageListMethods<Discord.Message, MessageContext>>(null);
@@ -32,6 +39,10 @@ export function MessagesList({ messages }: { messages: Discord.Message[] }) {
   const [listHeight, setListHeight] = useState<number | undefined>(undefined);
   const [show, setShow] = useState(false);
   const updated = useRef(false);
+
+  const messages = useMemo(() => {
+    return pages.map(([, messages]) => messages).flat();
+  }, [pages]);
 
   const references = useMemo(() => {
     const messagesReversed = [...messages].reverse();
@@ -96,12 +107,14 @@ export function MessagesList({ messages }: { messages: Discord.Message[] }) {
     };
   }, []);
 
+  const showLink = (searchParams.get("query")?.length || 0) >= 3;
+
   return (
     <div ref={ref} style={{ height: listHeight }}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList<Discord.Message, MessageContext>
           ref={messageListRef}
-          className={cx(
+          className={clsx(
             "px-4 mt-8 transition-opacity duration-500 delay-150 h-full",
             {
               "opacity-0": !show,
@@ -111,8 +124,10 @@ export function MessagesList({ messages }: { messages: Discord.Message[] }) {
           ItemContent={ItemContent}
           context={{
             references,
+            channel: params.channel as string,
             page: params.page as string,
             blur,
+            showLink,
           }}
           EmptyPlaceholder={() => <Empty callback={() => setShow(true)} />}
         />
@@ -128,7 +143,7 @@ const Empty = ({ callback }: { callback(): void }) => {
     };
   }, [callback]);
 
-  return <></>;
+  return <span className="text-xs">No messages</span>;
 };
 
 const ItemContent: VirtuosoMessageListProps<
@@ -137,7 +152,7 @@ const ItemContent: VirtuosoMessageListProps<
 >["ItemContent"] = ({
   data: message,
   prevData: prevMessage,
-  context: { references, page, blur },
+  context: { references, channel, page, blur, showLink },
 }) => {
   const { id, message_reference, author } = message;
   const hasReply = references.has(message_reference?.message_id!);
@@ -147,6 +162,7 @@ const ItemContent: VirtuosoMessageListProps<
   const showAuthor = author.id !== prevMessage?.author.id;
   const currentDay = DateTime.fromISO(message.timestamp);
   const prevDay = prevMessage && DateTime.fromISO(prevMessage?.timestamp);
+  const searchParams = useSearchParams();
 
   const methods = useVirtuosoMethods<Discord.Message, {}>();
   const [ref, bounds] = useMeasure<HTMLDivElement>();
@@ -169,10 +185,10 @@ const ItemContent: VirtuosoMessageListProps<
           </span>
         </div>
       )}
-      <div className={cx({ "text-right": alignRight })}>
+      <div className={clsx({ "text-right": alignRight })}>
         {showAuthor && (
           <div
-            className={cx("flex gap-2 items-center pt-3 mt-2 mb-2 z-10", {
+            className={clsx("flex gap-2 items-center pt-3 mt-2 mb-2 z-10", {
               "justify-start flex-row-reverse": alignRight,
               "blur-sm": blur,
             })}
@@ -195,6 +211,11 @@ const ItemContent: VirtuosoMessageListProps<
           page={page}
           align={alignRight ? "right" : "left"}
           replyToMessage={replyMessage || (hasReply ? true : null)}
+          url={
+            showLink
+              ? `/chats/${channel}/${message.page}#${message.id}`
+              : undefined
+          }
         />
       </div>
     </div>

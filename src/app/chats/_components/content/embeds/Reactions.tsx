@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import Image from "next/image";
 import { EmbedProps } from "./Embed";
 
@@ -10,7 +10,9 @@ export const Reactions: EmbedProps = ({ message, options }) => {
   return [
     <div
       key={message.id}
-      className={cx("flex mb-1", { "justify-end": options?.align === "right" })}
+      className={clsx("flex mb-1", {
+        "justify-end": options?.align === "right",
+      })}
     >
       {message.reactions.map(({ emoji: { id, name }, count }) => {
         return (

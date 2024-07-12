@@ -115,6 +115,7 @@ export namespace Discord {
       me: boolean;
       burst_count: number;
     }[];
+    page: string;
   }
 
   export interface Author {

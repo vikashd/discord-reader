@@ -4,17 +4,17 @@ import { ControlExtras } from "./ControlExtras";
 interface ControlsWithSuspenseProps {
   channel: string;
   page: string;
+  query?: string;
 }
 
 export async function ControlsWithSuspense({
   channel,
   page,
+  query,
 }: ControlsWithSuspenseProps) {
-  const response = await getMessages(channel, page);
+  const response = await getMessages({ channel, page, query });
 
-  const {
-    data: [data],
-  } = response;
+  const { data } = response;
 
   return <ControlExtras messages={data} />;
 }

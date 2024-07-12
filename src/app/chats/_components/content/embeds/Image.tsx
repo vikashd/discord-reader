@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import { DetailedHTMLProps, ImgHTMLAttributes, useState } from "react";
 import { getLinks } from "@/app/chats/_components/content/getLinks";
 import { isImage } from "@/app/chats/_components/content/isLinkType";
@@ -11,7 +11,7 @@ export const Image: EmbedProps = ({ message, options }) => {
     return (
       <div
         key={i}
-        className={cx("flex max-w-[300px]", {
+        className={clsx("flex max-w-[300px]", {
           "ml-auto justify-end": options?.align === "right",
         })}
       >

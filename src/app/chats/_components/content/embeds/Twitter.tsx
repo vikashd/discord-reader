@@ -1,4 +1,4 @@
-import cx from "classnames";
+import clsx from "clsx";
 import { XEmbed } from "react-social-media-embed";
 import { isTwitter } from "@/app/chats/_components/content/isLinkType";
 import { EmbedProps } from "./Embed";
@@ -14,7 +14,7 @@ export const Twitter: EmbedProps = ({ message, options }) => {
     return (
       <div
         key={url}
-        className={cx("flex mt-2 mb-1 md:max-w-[50%]", {
+        className={clsx("flex mt-2 mb-1 md:max-w-[50%]", {
           "ml-auto": options?.align === "right",
         })}
       >

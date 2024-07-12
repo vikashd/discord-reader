@@ -12,13 +12,14 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^0.37.0",
     "@virtuoso.dev/message-list": "^1.2.1",
-    "classnames": "^2.5.1",
+    "clsx": "^2.1.1",
     "iconoir-react": "^7.6.0",
     "luxon": "^3.4.4",
     "next": "14.2.2",
     "react": "^18",
     "react-dom": "^18",
-    "react-social-media-embed": "^2.5.13"
+    "react-social-media-embed": "^2.5.13",
+    "use-debounce": "^10.0.0"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2",
@@ -28,6 +29,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.2",
     "postcss": "^8",
+    "server-only": "^0.0.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

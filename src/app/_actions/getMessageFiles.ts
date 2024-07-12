@@ -1,3 +1,4 @@
+import "server-only";
 import { promises as fs } from "fs";
 import { unstable_cache } from "next/cache";
 

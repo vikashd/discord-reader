@@ -1,6 +1,6 @@
 "use client";
 
-import cx from "classnames";
+import clsx from "clsx";
 import {
   ArrowDown,
   ArrowLeft,
@@ -57,7 +57,7 @@ export function Controls({ children }: ControlsProps) {
         href={
           currentIndex === 0 ? {} : `/chats/${params.channel}/${currentIndex}`
         }
-        className={cx(
+        className={clsx(
           "flex grow-0 shrink-0 items-center justify-center rounded-full bg-slate-500 w-6 h-6 hover:bg-white hover:text-slate-500",
           { "pointer-events-none opacity-50": currentIndex === 0 }
         )}
@@ -70,7 +70,7 @@ export function Controls({ children }: ControlsProps) {
             ? {}
             : `/chats/${params.channel}/${currentIndex + 2}`
         }
-        className={cx(
+        className={clsx(
           "flex grow-0 shrink-0 items-center justify-center rounded-full bg-slate-500 w-6 h-6 hover:bg-white hover:text-slate-500",
           { "pointer-events-none opacity-50": currentIndex === totalPages - 1 }
         )}
@@ -79,7 +79,7 @@ export function Controls({ children }: ControlsProps) {
       </Link>
       <button
         type="button"
-        className={cx(
+        className={clsx(
           "flex grow-0 shrink-0 items-center justify-center rounded-full bg-slate-500 w-6 h-6 hover:bg-white hover:text-slate-500",
           { "bg-white text-slate-400": blur }
         )}
@@ -89,14 +89,17 @@ export function Controls({ children }: ControlsProps) {
       </button>
       <button
         type="button"
-        className={cx(
+        className={clsx(
           "flex grow-0 shrink-0 items-center justify-center rounded-full bg-slate-500 w-6 h-6 hover:bg-white hover:text-slate-500",
           { "bg-white text-slate-400": searchParams.has("menu") }
         )}
         onClick={() => {
-          const next = searchParams.has("menu") ? pathname : "?menu";
+          const updated = new URLSearchParams(searchParams);
+          updated.has("menu")
+            ? updated.delete("menu")
+            : updated.set("menu", "");
 
-          router.push(`${next}`, { scroll: false });
+          router.push(`${pathname}?${updated.toString()}`, { scroll: false });
         }}
       >
         <StarSolid width={14} height={14} />
